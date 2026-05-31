@@ -7,16 +7,23 @@ export function middleware(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
     const { pathname } = request.nextUrl;
 
-    const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+    const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(path));
     const isApiPath = pathname.startsWith('/api');
+    const isStaticAsset = pathname.startsWith('/_next') || pathname.includes('.');
 
-    if (isApiPath) return NextResponse.next();
-
-    if (!token && !isPublicPath) {
-        return NextResponse.redirect(new URL('/login', request.url));
+    if (isApiPath || isStaticAsset) {
+        return NextResponse.next();
     }
 
-    if (token && (pathname === '/login' || pathname === '/register')) {
+    // Redirect to login if no token and trying to access protected route
+    if (!token && !isPublicPath) {
+        const loginUrl = new URL('/login', request.url);
+        loginUrl.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(loginUrl);
+    }
+
+    // Redirect to dashboard if has token and trying to access public route
+    if (token && isPublicPath && pathname !== '/') {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
@@ -24,5 +31,14 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+    matcher: [
+        /*
+         * Match all request paths except:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - public folder
+         */
+        '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    ],
 };
