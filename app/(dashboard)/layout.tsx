@@ -4,17 +4,22 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, isLoading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
-        if (!isAuthenticated) {
+        // Tunggu loading selesai
+        if (!isLoading && !isAuthenticated) {
             router.push('/login');
         }
-    }, [isAuthenticated, router]);
+    }, [isAuthenticated, isLoading, router]);
+
+    if (isLoading) {
+        return <div className="text-center py-20">Loading...</div>;
+    }
 
     if (!isAuthenticated) {
-        return <div className="text-center py-20">Loading...</div>;
+        return null;
     }
 
     return <>{children}</>;
