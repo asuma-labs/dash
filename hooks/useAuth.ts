@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { authService } from '@/services/auth.service';
-import { setToken, removeToken, getUserFromToken } from '@/lib/auth';
+import { setToken, removeToken, getToken, getUserFromToken } from '@/lib/auth';
 
 export const useAuth = () => {
     const router = useRouter();
