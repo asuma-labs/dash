@@ -15,14 +15,13 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Redirect to login if no token and trying to access protected route
+    // ✅ Cek token
     if (!token && !isPublicPath) {
         const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('redirect', pathname);
         return NextResponse.redirect(loginUrl);
     }
 
-    // Redirect to dashboard if has token and trying to access public route
+    // ✅ Cek token, jika ada dan di public path, redirect ke dashboard
     if (token && isPublicPath && pathname !== '/') {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
@@ -32,13 +31,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        /*
-         * Match all request paths except:
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * - public folder
-         */
         '/((?!_next/static|_next/image|favicon.ico|public/).*)',
     ],
 };
