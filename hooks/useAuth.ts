@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { authService } from '@/services/auth.service';
 import { setToken, removeToken, getToken, getUserFromToken } from '@/lib/auth';
 
 export const useAuth = () => {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const { user, token, setAuth, logout: storeLogout, updateUser } = useAuthStore();
 
     useEffect(() => {
-        const initAuth = async () => {
+        const initAuth = () => {
             const storedToken = getToken();
             if (storedToken) {
                 const userData = getUserFromToken();
@@ -23,25 +25,28 @@ export const useAuth = () => {
 
     const login = async (identifier: string, password: string) => {
         const res = await authService.login({ identifier, password });
-        // Simpan token ke tempat yang bisa dibaca oleh Middleware & Axios
-        setToken(res.token);
-        localStorage.setItem('token', res.token); // Opsional sebagai cadangan backward-compatibility
-        setAuth(res.user, res.token);
+        if (res.token) {
+            setToken(res.token);
+            setAuth(res.user, res.token);
+            router.push('/dashboard');
+        }
         return res;
     };
 
     const register = async (username: string, password: string, phone_number?: string, email?: string) => {
         const res = await authService.register({ username, password, phone_number, email });
-        setToken(res.token);
-        localStorage.setItem('token', res.token);
-        setAuth(res.user, res.token);
+        if (res.token) {
+            setToken(res.token);
+            setAuth(res.user, res.token);
+            router.push('/dashboard');
+        }
         return res;
     };
 
     const logout = () => {
-        removeToken(); // Hapus cookie
-        localStorage.removeItem('token'); // Hapus localstorage
-        storeLogout(); // Reset zustand store
+        removeToken();
+        storeLogout();
+        router.push('/login');
     };
 
     return {
