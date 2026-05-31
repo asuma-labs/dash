@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
-import { getToken, getUserFromToken } from '@/lib/auth';
+import { authService } from '@/services/auth.service';
+import { setToken, removeToken, getUserFromToken } from '@/lib/auth';
 
 export const useAuth = () => {
     const router = useRouter();
@@ -30,6 +31,14 @@ export const useAuth = () => {
         return res;
     };
 
+    const register = async (username: string, password: string, phone_number?: string, email?: string) => {
+        const res = await authService.register({ username, password, phone_number, email });
+        setToken(res.token);
+        setAuth(res.user, res.token);
+        router.push('/dashboard');
+        return res;
+    };
+
     const logout = () => {
         removeToken();
         storeLogout();
@@ -42,6 +51,7 @@ export const useAuth = () => {
         isAuthenticated: !!user && !!token,
         isLoading,
         login,
+        register,
         logout,
         updateUser,
     };
