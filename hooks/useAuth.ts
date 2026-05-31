@@ -23,7 +23,9 @@ export const useAuth = () => {
 
     const login = async (identifier: string, password: string) => {
         const res = await authService.login({ identifier, password });
+        // Simpan token ke tempat yang bisa dibaca oleh Middleware & Axios
         setToken(res.token);
+        localStorage.setItem('token', res.token); // Opsional sebagai cadangan backward-compatibility
         setAuth(res.user, res.token);
         return res;
     };
@@ -31,13 +33,15 @@ export const useAuth = () => {
     const register = async (username: string, password: string, phone_number?: string, email?: string) => {
         const res = await authService.register({ username, password, phone_number, email });
         setToken(res.token);
+        localStorage.setItem('token', res.token);
         setAuth(res.user, res.token);
         return res;
     };
 
     const logout = () => {
-        removeToken();
-        storeLogout();
+        removeToken(); // Hapus cookie
+        localStorage.removeItem('token'); // Hapus localstorage
+        storeLogout(); // Reset zustand store
     };
 
     return {
