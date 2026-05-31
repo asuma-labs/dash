@@ -1,24 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { botService } from '@/services/bot.service';
 import type { BotStatus, SystemStats, CloneBot } from '@/types/bot';
 
 export default function DashboardPage() {
     const { user, isAuthenticated, isLoading } = useAuth();
-    const router = useRouter();
     const [status, setStatus] = useState<BotStatus | null>(null);
     const [stats, setStats] = useState<SystemStats | null>(null);
     const [clones, setClones] = useState<CloneBot[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    // Hanya check auth, jangan redirect di sini
-    useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
-            router.push('/login');
-        }
-    }, [isAuthenticated, isLoading, router]);
+    const [dataLoading, setDataLoading] = useState(true);
 
     useEffect(() => {
         if (!isAuthenticated) return;
@@ -36,17 +27,17 @@ export default function DashboardPage() {
             } catch (err) {
                 console.error(err);
             } finally {
-                setLoading(false);
+                setDataLoading(false);
             }
         };
         fetchData();
 
-        const interval = setInterval(fetchData, 10000);
+        const interval = setInterval(fetchData, 30000);
         return () => clearInterval(interval);
     }, [isAuthenticated]);
 
-    if (isLoading || loading) {
-        return <div className="text-center py-20">Loading...</div>;
+    if (isLoading || dataLoading) {
+        return <div className="text-center py-20">Loading dashboard...</div>;
     }
 
     if (!isAuthenticated) {
@@ -61,7 +52,6 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-                {/* Bot Status Card */}
                 <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
                     <h3 className="text-lg font-semibold mb-4">🤖 Bot Status</h3>
                     {status && (
@@ -88,7 +78,6 @@ export default function DashboardPage() {
                     )}
                 </div>
 
-                {/* System Stats Card */}
                 <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
                     <h3 className="text-lg font-semibold mb-4">💻 System Stats</h3>
                     {stats && (
@@ -110,7 +99,6 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Clone Bots List */}
             <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
                 <h3 className="text-lg font-semibold mb-4">📱 Clone Bots ({clones.length})</h3>
                 {clones.length === 0 ? (
