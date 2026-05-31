@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+/*import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const publicPaths = ['/login', '/register', '/auth/magic', '/auth/callback', '/'];
@@ -33,4 +33,16 @@ export const config = {
     matcher: [
         '/((?!_next/static|_next/image|favicon.ico|public/).*)',
     ],
+};
+*/
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+    // Skip semua, biarkan routing normal
+    return NextResponse.next();
+}
+
+export const config = {
+    matcher: [],
 };
