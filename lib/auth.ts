@@ -36,7 +36,6 @@ export const isAuthenticated = (): boolean => {
 export const getUserFromToken = (): JwtPayload | null => {
     const token = getToken();
     if (!token) return null;
-
     try {
         return jwtDecode<JwtPayload>(token);
     } catch {
