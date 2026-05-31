@@ -13,7 +13,7 @@ export const useAuth = () => {
         const initAuth = async () => {
             const storedToken = getToken();
             if (storedToken) {
-                const userData = getUserFromToken(storedToken);
+                const userData = getUserFromToken();
                 if (userData) {
                     setAuth(userData as any, storedToken);
                 }
