@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/Input';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
     const { login } = useAuth();
+    const router = useRouter();
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -19,6 +21,7 @@ export default function LoginPage() {
 
         try {
             await login(identifier, password);
+            router.push('/dashboard');
         } catch (err: any) {
             setError(err.response?.data?.error || 'Login gagal');
         } finally {
