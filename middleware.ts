@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Tentukan path publik secara eksak
-const publicPaths = ['/login', '/register', '/auth/magic', '/auth/callback', '/'];
+const publicPaths = ['/login', '/register', '/auth/magic', '/auth/callback'];
 
 export function middleware(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
@@ -15,20 +14,22 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // 🔴 PERBAIKAN: Gunakan equals eksak, atau jika butuh sub-path gunakan kondisi khusus
-    const isPublicPath = publicPaths.some(path => {
-        if (path === '/') return pathname === '/'; // khusus root harus sama persis
-        return pathname === path || pathname.startsWith(path + '/');
-    });
+    // Halaman root '/' juga publik
+    if (pathname === '/') {
+        return NextResponse.next();
+    }
 
-    // ✅ Jika TIDAK punya token dan mencoba akses halaman privat -> Lempar ke /login
+    // Cek apakah path termasuk public
+    const isPublicPath = publicPaths.some(path => pathname === path);
+
+    // Jika tidak punya token dan bukan public path, redirect ke login
     if (!token && !isPublicPath) {
         const loginUrl = new URL('/login', request.url);
         return NextResponse.redirect(loginUrl);
     }
 
-    // ✅ Jika PUNYA token dan mencoba akses halaman publik (kecuali root '/') -> Lempar ke /dashboard
-    if (token && isPublicPath && pathname !== '/') {
+    // Jika punya token dan mencoba akses halaman public (login/register)
+    if (token && isPublicPath) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
