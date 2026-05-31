@@ -1,18 +1,15 @@
 import axios from 'axios';
-import { getToken, removeToken } from '@/lib/auth';
+import { getToken, removeToken } from './auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://bot.asuma.my.id';
 
 export const api = axios.create({
     baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     timeout: 30000,
     withCredentials: true,
 });
 
-// ✅ KONSISTEN: Ambil token hanya dari cookie lewat helper getToken()
 api.interceptors.request.use((config) => {
     const token = getToken();
     if (token) {
@@ -21,18 +18,13 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// ✅ AMAN: Jika backend melempar 401, hapus session secara bersih tanpa memicu tabrakan redirect
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            // Bersihkan token dari Cookie dan LocalStorage sekaligus
             removeToken();
-            localStorage.removeItem('token');
-            
-            // Lakukan hard reload aman agar middleware Next.js yang menangani redirect ke /login
-            if (typeof window !== 'undefined') {
-                window.location.reload();
+            if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+                window.location.href = '/login';
             }
         }
         return Promise.reject(error);
