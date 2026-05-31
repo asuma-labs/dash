@@ -7,24 +7,25 @@ interface JwtPayload {
 }
 
 export const setToken = (token: string) => {
+    document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`;
     localStorage.setItem('token', token);
-    document.cookie = `token=${token}; path=/; max-age=604800`;
 };
 
 export const getToken = (): string | null => {
-    if (typeof window === 'undefined') return null;
+    if (typeof document === 'undefined') return null;
+    const match = document.cookie.match(/token=([^;]+)/);
+    if (match) return match[1];
     return localStorage.getItem('token');
 };
 
 export const removeToken = () => {
-    localStorage.removeItem('token');
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+    localStorage.removeItem('token');
 };
 
 export const isAuthenticated = (): boolean => {
     const token = getToken();
     if (!token) return false;
-
     try {
         const decoded = jwtDecode<JwtPayload>(token);
         return decoded.exp > Date.now() / 1000;
